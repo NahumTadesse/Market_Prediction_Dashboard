@@ -5,6 +5,11 @@ export function formatPrice(value: number, kind: 'index' | 'stock' = 'stock') {
   return kind === 'stock' ? `$${twoDecimals.format(value)}` : twoDecimals.format(value)
 }
 
+/** 0.1234 -> "12.3%" */
+export function formatPercent(fraction: number) {
+  return `${(fraction * 100).toFixed(1)}%`
+}
+
 /** e.g. "+1.23 (+0.45%)" */
 export function formatChange(change: number, changePct: number) {
   const sign = change >= 0 ? '+' : '−'

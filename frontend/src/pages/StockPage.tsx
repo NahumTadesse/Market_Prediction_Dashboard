@@ -1,9 +1,10 @@
 import { useState } from 'react'
-import { formatChange, formatPrice } from '../format'
+import { Disclaimer } from '../Disclaimer'
+import { formatChange, formatPercent, formatPrice } from '../format'
 import { Link } from '../Link'
 import { PriceChart } from '../PriceChart'
 import { TimeframeButtons } from '../TimeframeButtons'
-import type { History, Quote, Timeframe } from '../types'
+import type { History, Projection, Quote, Timeframe } from '../types'
 import { ApiError, useApi } from '../useApi'
 
 const backLink = (
@@ -17,6 +18,7 @@ export function StockPage({ symbol }: { symbol: string }) {
   const base = `/api/stocks/${encodeURIComponent(symbol)}`
   const quote = useApi<Quote>(base)
   const history = useApi<History>(`${base}/history?timeframe=${timeframe}`)
+  const projection = useApi<Projection>(`${base}/projection?timeframe=${timeframe}`)
 
   if (quote.error) {
     const notFound = quote.error instanceof ApiError && quote.error.status === 404
@@ -75,15 +77,32 @@ export function StockPage({ symbol }: { symbol: string }) {
         </div>
 
         {/* Keep the old chart visible but dimmed while a new timeframe loads. */}
-        <div className={`h-80 transition-opacity ${history.loading ? 'opacity-50' : ''}`}>
+        <div className={`h-96 transition-opacity ${history.loading || projection.loading ? 'opacity-50' : ''}`}>
           {history.error ? (
             <p className="text-slate-400">Couldn't load price history: {history.error.message}</p>
           ) : points.length > 0 ? (
-            <PriceChart points={points} timeframe={history.data!.timeframe} kind={q.kind} />
+            <PriceChart
+              points={points}
+              interval={history.data!.interval}
+              timeframe={history.data!.timeframe}
+              kind={q.kind}
+              // Only draw a projection that belongs to the history on screen.
+              projection={projection.data?.timeframe === history.data!.timeframe ? projection.data : undefined}
+            />
           ) : (
             <p className="text-slate-400">Loading chart…</p>
           )}
         </div>
+
+        {projection.data && (
+          <p className="mt-4 text-sm text-slate-400">
+            Projection for the next {timeframe}, based on {projection.data.history_years} years of daily prices: average
+            return {formatPercent(projection.data.annual_return)} per year, volatility{' '}
+            {formatPercent(projection.data.annual_volatility)} per year.
+          </p>
+        )}
+        {projection.error && <p className="mt-4 text-sm text-slate-400">No projection: {projection.error.message}.</p>}
+        <Disclaimer />
       </section>
     </>
   )

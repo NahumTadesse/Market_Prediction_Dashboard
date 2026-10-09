@@ -173,6 +173,11 @@ def get_history(db: Session, symbol: str, timeframe: TimeframeKey) -> list[Price
     return [b for b in bars if b.ts >= cutoff]
 
 
+def get_daily_closes(db: Session, symbol: str) -> list[float]:
+    """Up to 5 years of daily closes, oldest first; the input for the projection math."""
+    return [b.close for b in _cached_bars(db, symbol, "1d")]
+
+
 # --- Quotes -------------------------------------------------------------------------------
 
 

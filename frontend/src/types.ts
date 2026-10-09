@@ -32,3 +32,32 @@ export type History = {
   interval: string // bar size, e.g. "5m", "1d", "1wk"
   points: PricePoint[]
 }
+
+// Mirrors ProjectionPointOut.
+export type ProjectionPoint = {
+  days_ahead: number // trading days after the last chart point
+  ts: number // rough Unix timestamp, for labels only
+  low: number // 10th percentile
+  expected: number // middle estimate (50th percentile)
+  high: number // 90th percentile
+}
+
+// Mirrors ProjectionOut. See backend/app/projection.py for the math.
+export type Projection = {
+  symbol: string
+  timeframe: Timeframe
+  horizon_days: number
+  start_price: number
+  start_ts: number
+  history_years: number
+  mu: number
+  sigma: number
+  annual_return: number
+  annual_volatility: number
+  points: ProjectionPoint[]
+  // Final value = amount * multiplier.
+  pessimistic: number
+  likely: number
+  optimistic: number
+  prob_loss: number // 0..1
+}
