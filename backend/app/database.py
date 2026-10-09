@@ -4,7 +4,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import DeclarativeBase, sessionmaker
 
 # Keep the DB file in backend/ no matter which directory the app is started from.
-DB_PATH = Path(__file__).resolve().parent.parent / "markets.db"
+DB_PATH = Path(__file__).resolve().parent.parent / "stocks.db"
 DATABASE_URL = f"sqlite:///{DB_PATH}"
 
 # check_same_thread=False lets FastAPI use the connection from different threads.

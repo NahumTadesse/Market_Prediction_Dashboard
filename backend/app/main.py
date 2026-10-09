@@ -1,24 +1,17 @@
-import asyncio
-from contextlib import asynccontextmanager, suppress
+from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 
-from app.routers import markets, ws
-from app.seed import seed
-from app.simulator import run_simulator
+from app.database import Base, engine
+from app.routers import ws
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # Create tables and sample data on startup, so a fresh clone works without extra steps.
-    seed()
-    simulator = asyncio.create_task(run_simulator())
+    # Create any missing tables on startup, so a fresh clone works without extra steps.
+    Base.metadata.create_all(bind=engine)
     yield
-    simulator.cancel()
-    with suppress(asyncio.CancelledError):
-        await simulator
 
 
-app = FastAPI(title="Prediction Market Dashboard API", lifespan=lifespan)
-app.include_router(markets.router)
+app = FastAPI(title="Stock Dashboard API", lifespan=lifespan)
 app.include_router(ws.router)
