@@ -13,9 +13,14 @@ The idea in one sentence: assume daily returns keep behaving like they did over 
      likely range    = P0 * exp(mu*n +/- 1.28*sigma*sqrt(n))  (10th to 90th percentile)
 5. Chance of a loss = chance the total log return is below 0 = Phi(-mu*n / (sigma*sqrt(n))),
    where Phi is the standard normal CDF.
+6. Monte Carlo paths (for the chart only): instead of the formula, actually roll the dice.
+   Start at P0 and repeatedly multiply by exp(random move), each move drawn from a normal
+   distribution with the same mu and sigma, scaled to the step length. Each path is one
+   possible future; many of them would fill the shaded range, with half above the middle line.
 """
 
 import math
+import random
 import statistics
 from datetime import datetime, timedelta
 
@@ -55,6 +60,27 @@ def normal_cdf(z: float) -> float:
 def prob_loss(mu: float, sigma: float, days: float) -> float:
     """Chance of ending below the starting price after `days` trading days."""
     return normal_cdf(-mu * days / (sigma * math.sqrt(days)))
+
+
+def simulate_paths(
+    p0: float, mu: float, sigma: float, step_days: float, steps: int, count: int, seed: str
+) -> list[list[float]]:
+    """`count` random price paths of `steps` moves each, starting at p0 (included as point 0).
+    One step lasts `step_days` trading days, so its log return is normal with mean mu*step_days
+    and standard deviation sigma*sqrt(step_days): the same scaling rule as price_range().
+    A fixed seed gives the same paths on every reload instead of a new picture each time."""
+    rng = random.Random(seed)
+    drift = mu * step_days
+    volatility = sigma * math.sqrt(step_days)
+    paths = []
+    for _ in range(count):
+        price = p0
+        path = [price]
+        for _ in range(steps):
+            price *= math.exp(rng.gauss(drift, volatility))
+            path.append(price)
+        paths.append(path)
+    return paths
 
 
 def future_ts(start_ts: int, days: float, intraday: bool) -> int:

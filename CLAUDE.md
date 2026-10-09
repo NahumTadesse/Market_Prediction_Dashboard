@@ -28,8 +28,10 @@ money. Market data comes from **yfinance** (Yahoo Finance) and is cached in SQLi
   when no client is connected). The frontend subscribes instead of polling.
 - **Projection math** lives in `backend/app/projection.py` (its docstring explains it): mean and
   standard deviation of 5 years of daily log returns, scaled by n and sqrt(n) for an n-day
-  horizon; 10th/50th/90th percentiles and the chance of a loss. The chart and the investment
-  calculator both use the same `/projection` endpoint, so they always agree.
+  horizon; 10th/50th/90th percentiles and the chance of a loss. The chart also draws 8
+  Monte Carlo paths (random per-bar moves with the same mu and sigma, seeded so a reload shows
+  the same paths). The chart and the investment calculator both use the same `/projection`
+  endpoint, so they always agree.
 
 ### API
 

@@ -20,10 +20,10 @@ type Props = {
   projection?: Projection
 }
 
-// One row per x position. History rows have `close`; projection rows have `expected` and
-// `band` ([low, high], which Recharts draws as a shaded range). The last history row has both,
-// so the projection starts exactly where the price line ends.
-type Row = { x: number; ts: number; close?: number; expected?: number; band?: [number, number] }
+// One row per x position. History rows have `close`; projection rows have `expected`, `band`
+// ([low, high], which Recharts draws as a shaded range) and `paths` (one price per Monte Carlo
+// path). The last history row has both, so the projection starts where the price line ends.
+type Row = { x: number; ts: number; close?: number; expected?: number; band?: [number, number]; paths?: number[] }
 
 // How many bars make up one trading day, to place projection points on the bar-count x-axis.
 const BARS_PER_DAY: Record<string, number> = { '5m': 78, '15m': 26, '30m': 13, '1d': 1, '1wk': 1 / 5 }
@@ -33,6 +33,7 @@ const GRID_COLOR = '#1e293b' // slate-800
 const UP_COLOR = '#34d399' // emerald-400
 const DOWN_COLOR = '#fb7185' // rose-400
 const PROJECTION_COLOR = '#38bdf8' // sky-400
+const PATH_OPACITY = 0.45
 
 function buildRows(points: PricePoint[], interval: string, projection?: Projection): Row[] {
   const rows: Row[] = points.map((point, i) => ({ x: i, ts: point.ts, close: point.close }))
@@ -42,9 +43,15 @@ function buildRows(points: PricePoint[], interval: string, projection?: Projecti
   const barsPerDay = BARS_PER_DAY[interval] ?? 1
   for (const p of projection.points) {
     if (p.days_ahead === 0) {
-      Object.assign(last, { expected: p.expected, band: [p.low, p.high] })
+      Object.assign(last, { expected: p.expected, band: [p.low, p.high], paths: p.paths })
     } else {
-      rows.push({ x: last.x + p.days_ahead * barsPerDay, ts: p.ts, expected: p.expected, band: [p.low, p.high] })
+      rows.push({
+        x: last.x + p.days_ahead * barsPerDay,
+        ts: p.ts,
+        expected: p.expected,
+        band: [p.low, p.high],
+        paths: p.paths,
+      })
     }
   }
   return rows
@@ -119,6 +126,10 @@ export function PriceChart({ points, interval, timeframe, kind, projection }: Pr
               <span className="h-2.5 w-4 rounded-sm" style={{ background: PROJECTION_COLOR, opacity: 0.3 }} />
               Likely range (80% of outcomes)
             </li>
+            <li className="flex items-center gap-1.5">
+              <span className="h-px w-4" style={{ background: PROJECTION_COLOR, opacity: PATH_OPACITY }} />
+              Monte Carlo paths
+            </li>
           </>
         )}
       </ul>
@@ -162,6 +173,19 @@ export function PriceChart({ points, interval, timeframe, kind, projection }: Pr
                   activeDot={false}
                   isAnimationActive={false}
                 />
+                {/* Faint simulated paths, drawn under the expected line so it stays readable. */}
+                {projection.points[0]?.paths.map((_, i) => (
+                  <Line
+                    key={i}
+                    dataKey={(row: Row) => row.paths?.[i]}
+                    stroke={PROJECTION_COLOR}
+                    strokeOpacity={PATH_OPACITY}
+                    strokeWidth={1}
+                    dot={false}
+                    activeDot={false}
+                    isAnimationActive={false}
+                  />
+                ))}
                 <Line
                   dataKey="expected"
                   stroke={PROJECTION_COLOR}

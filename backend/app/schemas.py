@@ -48,6 +48,7 @@ class ProjectionPointOut(BaseModel):
     low: float  # 10th percentile
     expected: float  # middle estimate (50th percentile)
     high: float  # 90th percentile
+    paths: list[float]  # each Monte Carlo path's simulated price at this point
 
 
 class ProjectionOut(BaseModel):

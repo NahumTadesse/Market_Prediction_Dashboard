@@ -7,6 +7,7 @@ from sqlalchemy.orm import Session
 from app.database import get_db
 from app import projection
 from app.market_data import (
+    BARS_PER_DAY,
     HOME_SYMBOLS,
     INTRADAY,
     TIMEFRAMES,
@@ -59,7 +60,7 @@ def get_stock_history(symbol: Symbol, timeframe: TimeframeKey = "1Y", db: Sessio
     )
 
 
-PROJECTION_STEPS = 30  # points along the projected line; enough for a smooth curve
+MONTE_CARLO_PATHS = 8
 
 
 @router.get("/stocks/{symbol}/projection", response_model=ProjectionOut)
@@ -80,12 +81,28 @@ def get_stock_projection(symbol: Symbol, timeframe: TimeframeKey = "1Y", db: Ses
     tf = TIMEFRAMES[timeframe]
     n = tf.trading_days
     start = bars[-1]
+    # One projection point per chart bar, so the simulated paths are as jagged as the real price
+    # history next to them (e.g. 5-minute moves on 1D, weekly moves on 10Y).
+    steps = round(n * BARS_PER_DAY[tf.interval])
+    step_days = n / steps
+    paths = projection.simulate_paths(
+        start.close, mu, sigma, step_days, steps, MONTE_CARLO_PATHS, seed=f"{symbol}:{timeframe}:{start.ts}"
+    )
     points = []
-    for step in range(PROJECTION_STEPS + 1):
-        days = n * step / PROJECTION_STEPS
+    for step in range(steps + 1):
+        days = step * step_days
         low, expected, high = projection.price_range(start.close, mu, sigma, days)
         ts = start.ts if step == 0 else projection.future_ts(start.ts, days, tf.interval in INTRADAY)
-        points.append(ProjectionPointOut(days_ahead=days, ts=ts, low=low, expected=expected, high=high))
+        points.append(
+            ProjectionPointOut(
+                days_ahead=days,
+                ts=ts,
+                low=low,
+                expected=expected,
+                high=high,
+                paths=[path[step] for path in paths],
+            )
+        )
 
     low, expected, high = projection.price_range(1.0, mu, sigma, n)
     return ProjectionOut(

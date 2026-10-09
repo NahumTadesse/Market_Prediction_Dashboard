@@ -40,6 +40,7 @@ export type ProjectionPoint = {
   low: number // 10th percentile
   expected: number // middle estimate (50th percentile)
   high: number // 90th percentile
+  paths: number[] // each Monte Carlo path's simulated price at this point
 }
 
 // Mirrors ProjectionOut. See backend/app/projection.py for the math.

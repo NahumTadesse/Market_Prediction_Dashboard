@@ -58,6 +58,8 @@ TIMEFRAMES: dict[TimeframeKey, Timeframe] = {
 # what it needs from it. Daily goes back 5 years because the projection math needs that much.
 DOWNLOAD_PERIOD = {"5m": "5d", "15m": "5d", "30m": "5d", "1d": "5y", "1wk": "10y"}
 INTRADAY = {"5m", "15m", "30m"}
+# Bars in one trading day (6.5 hours) for each bar size.
+BARS_PER_DAY = {"5m": 78, "15m": 26, "30m": 13, "1d": 1, "1wk": 1 / 5}
 
 # How long cached data stays fresh while the market is open (seconds).
 QUOTE_MAX_AGE = 60
