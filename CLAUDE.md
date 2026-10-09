@@ -28,13 +28,16 @@ For now, market data comes from a **simulated price generator** in the backend, 
 │   ├── markets.db          # SQLite database, created by the seed script (gitignored)
 │   ├── requirements.txt    # pinned Python dependencies
 │   └── app/
-│       ├── main.py         # FastAPI app entry point; seeds the DB on startup
+│       ├── main.py         # FastAPI app entry point; seeds the DB and starts the simulator
 │       ├── database.py     # engine, session factory, Base, get_db() dependency
 │       ├── models.py       # SQLAlchemy models: Market, PriceHistory
 │       ├── schemas.py      # Pydantic response models: MarketOut, PricePointOut
 │       ├── seed.py         # creates tables + sample markets: `python -m app.seed`
+│       ├── simulator.py    # background task: nudges prices every 3s, saves, broadcasts
+│       ├── connections.py  # ConnectionManager: tracks open WebSockets, broadcast()
 │       └── routers/
-│           └── markets.py  # GET /api/markets, /api/markets/{id}, /api/markets/{id}/history
+│           ├── markets.py  # GET /api/markets, /api/markets/{id}, /api/markets/{id}/history
+│           └── ws.py       # WebSocket /ws/markets (live price updates)
 └── frontend/               # Vite React + TS app (not created yet)
 ```
 
