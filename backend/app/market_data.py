@@ -221,11 +221,11 @@ def _download_quotes(symbols: list[str]) -> dict[str, dict]:
     return quotes
 
 
-def get_quotes(db: Session, symbols: list[str]) -> list[Quote]:
-    """Latest quotes in the order asked for. Only stale or missing symbols are downloaded.
-    Symbols yfinance doesn't know are left out."""
+def get_quotes(db: Session, symbols: list[str], force: bool = False) -> list[Quote]:
+    """Latest quotes in the order asked for. Only stale or missing symbols are downloaded,
+    unless `force` is set (the poller uses it). Symbols yfinance doesn't know are left out."""
     cached = {q.symbol: q for q in db.scalars(select(Quote).where(Quote.symbol.in_(symbols)))}
-    stale = [s for s in symbols if s not in cached or not is_fresh(cached[s].updated_at, QUOTE_MAX_AGE)]
+    stale = [s for s in symbols if force or s not in cached or not is_fresh(cached[s].updated_at, QUOTE_MAX_AGE)]
     if stale:
         for symbol, fields in _download_quotes(stale).items():
             quote = cached.get(symbol) or Quote(symbol=symbol, name=_lookup_name(symbol))
