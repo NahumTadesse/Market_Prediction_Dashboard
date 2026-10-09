@@ -40,11 +40,14 @@ For now, market data comes from a **simulated price generator** in the backend, 
 │           └── ws.py       # WebSocket /ws/markets (live price updates)
 └── frontend/               # Vite React + TS app
     ├── index.html          # HTML shell, page title
-    ├── vite.config.ts      # Vite plugins: React + Tailwind (@tailwindcss/vite)
+    ├── vite.config.ts      # React + Tailwind plugins; dev proxy /api and /ws → backend :8000
     ├── package.json
     └── src/
         ├── main.tsx        # React entry point
-        ├── App.tsx         # top-level component
+        ├── App.tsx         # top-level component: header, connection status, card grid
+        ├── useMarkets.ts   # hook: GET /api/markets once, then live updates from /ws/markets
+        ├── MarketCard.tsx  # one market: question, yes/no price, volume
+        ├── types.ts        # Market and PriceUpdateMessage types (mirror backend schemas)
         └── index.css       # `@import "tailwindcss";` (Tailwind v4, no config file)
 ```
 
