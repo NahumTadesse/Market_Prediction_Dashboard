@@ -2,8 +2,9 @@ from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 
+from app import models  # noqa: F401  (registers the tables on Base before create_all)
 from app.database import Base, engine
-from app.routers import ws
+from app.routers import stocks, ws
 
 
 @asynccontextmanager
@@ -14,4 +15,5 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(title="Stock Dashboard API", lifespan=lifespan)
+app.include_router(stocks.router)
 app.include_router(ws.router)
