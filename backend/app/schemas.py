@@ -68,3 +68,15 @@ class ProjectionOut(BaseModel):
     likely: float
     optimistic: float
     prob_loss: float  # 0..1
+
+
+class BacktestOut(BaseModel):
+    """What 1 unit of money invested at the start of the timeframe is worth at the end."""
+
+    symbol: str
+    timeframe: str
+    start_ts: int
+    start_price: float
+    end_ts: int
+    end_price: float
+    multiplier: float  # end_price / start_price; final value = amount * multiplier

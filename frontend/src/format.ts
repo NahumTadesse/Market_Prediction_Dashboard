@@ -25,6 +25,11 @@ const dayOnly = new Intl.DateTimeFormat('en-US', { timeZone: NY, month: 'short',
 const fullDate = new Intl.DateTimeFormat('en-US', { timeZone: NY, month: 'short', day: 'numeric', year: 'numeric' })
 const monthYear = new Intl.DateTimeFormat('en-US', { timeZone: NY, month: 'short', year: 'numeric' })
 
+/** 1D, 3D and 1W use intraday bars, so their labels include the time of day. */
+export function isIntraday(timeframe: string) {
+  return timeframe === '1D' || timeframe === '3D' || timeframe === '1W'
+}
+
 /** Short axis label: the finer the bars, the finer the label. */
 export function formatAxisTime(ts: number, timeframe: string) {
   const date = new Date(ts * 1000)

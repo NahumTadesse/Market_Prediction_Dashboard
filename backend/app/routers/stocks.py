@@ -17,7 +17,7 @@ from app.market_data import (
     get_quote,
     get_quotes,
 )
-from app.schemas import HistoryOut, PricePointOut, ProjectionOut, ProjectionPointOut, QuoteOut
+from app.schemas import BacktestOut, HistoryOut, PricePointOut, ProjectionOut, ProjectionPointOut, QuoteOut
 
 router = APIRouter(prefix="/api", tags=["stocks"])
 
@@ -104,4 +104,25 @@ def get_stock_projection(symbol: Symbol, timeframe: TimeframeKey = "1Y", db: Ses
         likely=expected,
         optimistic=high,
         prob_loss=projection.prob_loss(mu, sigma, n),
+    )
+
+
+@router.get("/stocks/{symbol}/backtest", response_model=BacktestOut)
+def get_stock_backtest(symbol: Symbol, timeframe: TimeframeKey = "1Y", db: Session = Depends(get_db)):
+    """Real past performance over the timeframe: first and last price of the same chart.
+    Prices are split- and dividend-adjusted, so this roughly includes reinvested dividends."""
+    symbol = symbol.upper()
+    try:
+        bars = get_history(db, symbol, timeframe)
+    except UnknownSymbolError:
+        raise not_found(symbol)
+    start, end = bars[0], bars[-1]
+    return BacktestOut(
+        symbol=symbol,
+        timeframe=timeframe,
+        start_ts=start.ts,
+        start_price=start.close,
+        end_ts=end.ts,
+        end_price=end.close,
+        multiplier=end.close / start.close,
     )

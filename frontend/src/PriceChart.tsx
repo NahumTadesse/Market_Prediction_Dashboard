@@ -9,7 +9,7 @@ import {
   XAxis,
   YAxis,
 } from 'recharts'
-import { formatAxisTime, formatPrice, formatTooltipTime } from './format'
+import { formatAxisTime, formatPrice, formatTooltipTime, isIntraday } from './format'
 import type { PricePoint, Projection, Timeframe } from './types'
 
 type Props = {
@@ -25,7 +25,6 @@ type Props = {
 // so the projection starts exactly where the price line ends.
 type Row = { x: number; ts: number; close?: number; expected?: number; band?: [number, number] }
 
-const INTRADAY: Timeframe[] = ['1D', '3D', '1W']
 // How many bars make up one trading day, to place projection points on the bar-count x-axis.
 const BARS_PER_DAY: Record<string, number> = { '5m': 78, '15m': 26, '30m': 13, '1d': 1, '1wk': 1 / 5 }
 
@@ -76,7 +75,7 @@ export function PriceChart({ points, interval, timeframe, kind, projection }: Pr
   const rows = buildRows(points, interval, projection)
   const tsByX = new Map(rows.map((row) => [row.x, row.ts]))
   const up = points.length > 1 && points[points.length - 1].close >= points[0].close
-  const intraday = INTRADAY.includes(timeframe)
+  const intraday = isIntraday(timeframe)
   const todayX = points.length - 1
 
   // Only the fields we read from what Recharts passes to a custom tooltip.

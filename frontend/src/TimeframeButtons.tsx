@@ -5,11 +5,12 @@ const TIMEFRAMES: Timeframe[] = ['1D', '3D', '1W', '1M', '1Y', '5Y', '10Y']
 type Props = {
   value: Timeframe
   onChange: (timeframe: Timeframe) => void
+  label?: string // accessible name, so two button groups on one page can be told apart
 }
 
-export function TimeframeButtons({ value, onChange }: Props) {
+export function TimeframeButtons({ value, onChange, label = 'Timeframe' }: Props) {
   return (
-    <div role="group" aria-label="Timeframe" className="flex flex-wrap gap-1">
+    <div role="group" aria-label={label} className="flex flex-wrap gap-1">
       {TIMEFRAMES.map((timeframe) => (
         <button
           key={timeframe}

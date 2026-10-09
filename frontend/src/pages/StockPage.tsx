@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Disclaimer } from '../Disclaimer'
 import { formatChange, formatPercent, formatPrice } from '../format'
+import { InvestmentCalculator } from '../InvestmentCalculator'
 import { Link } from '../Link'
 import { PriceChart } from '../PriceChart'
 import { TimeframeButtons } from '../TimeframeButtons'
@@ -104,6 +105,8 @@ export function StockPage({ symbol }: { symbol: string }) {
         {projection.error && <p className="mt-4 text-sm text-slate-400">No projection: {projection.error.message}.</p>}
         <Disclaimer />
       </section>
+
+      <InvestmentCalculator symbol={q.symbol} initialTimeframe={timeframe} />
     </>
   )
 }

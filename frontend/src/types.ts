@@ -61,3 +61,14 @@ export type Projection = {
   optimistic: number
   prob_loss: number // 0..1
 }
+
+// Mirrors BacktestOut.
+export type Backtest = {
+  symbol: string
+  timeframe: Timeframe
+  start_ts: number
+  start_price: number
+  end_ts: number
+  end_price: number
+  multiplier: number // final value = amount * multiplier
+}
