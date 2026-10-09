@@ -38,7 +38,14 @@ For now, market data comes from a **simulated price generator** in the backend, 
 │       └── routers/
 │           ├── markets.py  # GET /api/markets, /api/markets/{id}, /api/markets/{id}/history
 │           └── ws.py       # WebSocket /ws/markets (live price updates)
-└── frontend/               # Vite React + TS app (not created yet)
+└── frontend/               # Vite React + TS app
+    ├── index.html          # HTML shell, page title
+    ├── vite.config.ts      # Vite plugins: React + Tailwind (@tailwindcss/vite)
+    ├── package.json
+    └── src/
+        ├── main.tsx        # React entry point
+        ├── App.tsx         # top-level component
+        └── index.css       # `@import "tailwindcss";` (Tailwind v4, no config file)
 ```
 
 Update this tree when new top-level folders or key entry points are added.
